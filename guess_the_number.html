@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Guess the Number</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            text-align: center; 
+            margin-top: 20px;
+            background-color: #f0f8ff;
+        }
+        .message {
+            font-weight: bold;
+            color: #333;
+        }
+        input[type="number"] {
+            padding: 5px;
+            margin-right: 5px;
+        }
+        input[type="submit"] {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <p class="message">{{ message }}</p>
+    <form method="POST">
+        <input type="number" name="guess" min="1" max="100" required>
+        <input type="submit" value="Guess">
+    </form>
+</body>
+</html>

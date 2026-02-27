@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    body {
+        background-color: #AED8E6;
+    }
+    .member-container {
+        display: flex;
+        justify-content: center; /* Center the cards horizontally */
+        align-items: stretch; /* Make cards have the same height */
+        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    }
+    .member-card {
+        background-color: white;
+        padding: 15px;
+        text-align: center;
+        width: 18%; /* Adjust width to make cards smaller */
+        margin: 15px;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    .member-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+    .member-card h3 {
+        margin-top: 15px;
+        font-size: 1em;
+    }
+    .member-card p {
+        font-size: 0.9em;
+    }
+</style>
+
+<h2>Members Group</h2>
+
+<div class="member-container">
+    {% for member in members %}
+    <div class="member-card">
+        <div>
+            <img src="{% if 'http' in member.image %}{{ member.image }}{% else %}{{ url_for('static', filename=member.image) }}{% endif %}" alt="{{ member.name }}">
+            <h3>{{ member.name }}</h3>
+        </div>
+        <p>{{ member.role }}</p>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

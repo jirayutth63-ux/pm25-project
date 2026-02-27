@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="analyzer-container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2><i class="fas fa-smog"></i> เครื่องมือจำลองและวิเคราะห์ PM2.5</h2>
+        <form method="POST" style="margin:0;">
+            <button type="submit" name="action" value="clear" class="btn btn-sm btn-outline-danger">ล้างประวัติ</button>
+        </form>
+    </div>
+    
+    <form method="POST">
+        <div class="input-grid">
+            <div><label><i class="fas fa-car"></i> ปริมาณรถ (คัน/ชม.):</label><input type="number" step="any" name="traffic" value="{{ pm25_inputs.traffic or '' }}" required></div>
+            <div><label><i class="fas fa-industry"></i> โรงงาน (แห่ง):</label><input type="number" step="any" name="industry" value="{{ pm25_inputs.industry or '' }}" required></div>
+            <div><label><i class="fas fa-fire-alt"></i> การเผา (ไร่):</label><input type="number" step="any" name="burning" value="{{ pm25_inputs.burning or '' }}" required></div>
+            <div><label><i class="fas fa-wind"></i> ความเร็วลม (กม./ชม.):</label><input type="number" step="any" name="wind" value="{{ pm25_inputs.wind or '' }}" required></div>
+        </div>
+        <button type="submit" name="action" value="calculate" class="main-btn mt-3">คำนวณและบันทึกค่าพื้นฐาน</button>
+        <div class="btn-group">
+            <button type="submit" name="action" value="scenario_traffic" class="scenario-btn">จำลอง: รถเพิ่ม 50%</button>
+            <button type="submit" name="action" value="scenario_burning" class="scenario-btn">จำลอง: เพิ่มการเผา</button>
+            <button type="submit" name="action" value="scenario_wind" class="scenario-btn">จำลอง: ลมอ่อนลง</button>
+        </div>
+    </form>
+
+    {% if pm25_result %}
+        <div class="result-card {{ pm25_result.css_class }}">
+            <h3><i class="fas fa-chart-bar"></i> ผลการประเมินล่าสุด</h3>
+            <p><strong>ค่า PM2.5:</strong> <span style="font-size: 1.2em; font-weight: bold;">{{ "%.1f"|format(pm25_result.calculated_pm25) }}</span> µg/m³</p>
+            <p><strong><i class="fas fa-info-circle"></i> ระดับคุณภาพอากาศ:</strong> {{ pm25_result.level }}</p>
+            <p><strong><i class="fas fa-first-aid"></i> คำแนะนำ:</strong> {{ pm25_result.message }}</p>
+        </div>
+    {% endif %}
+
+    {% if detailed_analysis %}
+        <div class="detailed-analysis">
+            <h4><i class="fas fa-search-location"></i> วิเคราะห์ผลการคำนวณ (Automated Insights)</h4>
+            <ul>
+                {% for point in detailed_analysis %}
+                    <li>{{ point|safe }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if analysis_summary %}
+        <div class="analysis-summary">
+            <h4><i class="fas fa-lightbulb"></i> สรุปผลการจำลองสถานการณ์</h4>
+            <p>{{ analysis_summary }}</p>
+        </div>
+    {% endif %}
+
+    <div class="graph-grid">
+        {% if bar_chart_graph %}
+            <div class="graph-container">
+                <h4 style="font-weight: 600;">เปรียบเทียบค่าล่าสุดกับเกณฑ์</h4>
+                <img src="data:image/png;base64,{{ bar_chart_graph }}" alt="Bar chart comparing PM2.5">
+            </div>
+        {% endif %}
+        {% if line_chart_graph %}
+            <div class="graph-container">
+                <h4 style="font-weight: 600;">แนวโน้มค่า PM2.5 จากการจำลอง</h4>
+                <img src="data:image/png;base64,{{ line_chart_graph }}" alt="Line chart of PM2.5 trend">
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="academic-note">
+        <h4><i class="fas fa-flask"></i> หลักการทำงานและแบบจำลองการกระจายตัว</h4>
+        <p>ระบบนี้ใช้ <strong>แบบจำลองการกระจายตัวของมลพิษ (Dispersion Model)</strong> เพื่อประเมินค่า PM2.5 โดยมีหลักการคือ: <code>PM2.5 = (ผลรวมแหล่งกำเนิด) / (ปัจจัยการกระจายตัวจากลม)</code> ซึ่งสะท้อนปรากฏการณ์จริงที่ลมทำหน้าที่ "เจือจาง" มลพิษ ไม่ใช่การ "ลบ" ออกไป ทำให้แบบจำลองมีความสมจริงและให้ผลลัพธ์ที่ไม่เป็นเชิงเส้นตรง โดยสูตรนี้ถูกประมวลผลด้วยภาษา Python ในส่วน Backend และใช้เงื่อนไข if-else ในการจัดระดับคุณภาพอากาศก่อนแสดงผล นอกจากนี้ ระบบยังแสดงผลค่า PM2.5 ในรูปแบบกราฟโดยใช้ไลบรารี <strong>Matplotlib</strong> เพื่อช่วยให้เห็นระดับและแนวโน้มของคุณภาพอากาศได้ชัดเจนขึ้น ซึ่งเป็นการประยุกต์ใช้ Python ด้านการจัดการข้อมูลและการสร้างภาพข้อมูลเชิงวิเคราะห์ (Data Visualization) ที่สำคัญ</p>
+    </div>
+
+    {% if history %}
+        <div class="history-table">
+            <h4><i class="fas fa-history"></i> ประวัติการคำนวณและจำลอง</h4>
+            <table>
+                <thead><tr><th>#</th><th>รถยนต์</th><th>อุตฯ</th><th>การเผา</th><th>ลม</th><th>PM2.5 (µg/m³)</th><th>ระดับ</th></tr></thead>
+                <tbody>
+                    {% for item in history|reverse %}
+                        <tr>
+                            <td>{{ loop.revindex }}</td>
+                            <td>{{ item.traffic }}</td>
+                            <td>{{ item.industry }}</td>
+                            <td>{{ item.burning }}</td>
+                            <td>{{ item.wind }}</td>
+                            <td><strong>{{ "%.1f"|format(item.pm25_value) }}</strong></td>
+                            <td>{{ item.level }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
