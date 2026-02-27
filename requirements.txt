@@ -1,0 +1,4 @@
+flask
+matplotlib
+firebase init apphosting
+gunicorn
